@@ -12,28 +12,31 @@ $formattedDate = date('Y-m-d', strtotime($date));
 // Generate NW_Attendance_ID
 $nwAttendanceID = generateNWAttendanceID($conn);
 
-// Set PunchOutTime to null
-$punchOutTime = null;
+// Set PunchInTime to null
+$punchInTime = null;
 
-// Set ShiftSession_ID to 1
-$shiftSessionID = 1;
+// Set ShiftSession_ID to 2
+$shiftSessionID = 2;
 
 // Get User_ID based on username
 $userID = getUserID($conn, $username);
 
-// Set default value for AttendanceStatus_ID
-$attendanceStatusID = 1;
+// Default value for attendanceStatusID
+$attendanceStatusID = 1; // Default to 1
 
-// Check if the time is before or equal to 09:00:00 AM
-if (strtotime($time) <= strtotime('09:00:00')) {
-    // Time is before or equal to 09:00:00 AM, set AttendanceStatus_ID to 1
+// Check if the time is before or equal to 06:00:00 PM
+if (strtotime($time) <= strtotime('18:00:00')) {
+    // Time is before or equal to 06:00:00 PM, set attendanceStatusID to 3
+    $attendanceStatusID = 3;
+} elseif (strtotime($time) === strtotime('18:00:00')) {
+    // Time is exactly 06:00:00 PM, set attendanceStatusID to 1
     $attendanceStatusID = 1;
 } else {
-    // Time is after 09:00:00 AM, set AttendanceStatus_ID to 2
+    // Time is after 06:00:00 PM, set attendanceStatusID to 2
     $attendanceStatusID = 2;
 }
 
-// Check if there is already a record for the given date and user ID
+// Check if there is already a record for the given date, user ID, and ShiftSession_ID
 $sqlCheck = "SELECT * FROM attendance WHERE AttendanceDate = '$formattedDate' AND User_ID = '$userID' AND ShiftSession_ID = '$shiftSessionID'";
 $resultCheck = $conn->query($sqlCheck);
 
@@ -42,7 +45,7 @@ if ($resultCheck->num_rows > 0) {
     echo "Attendance record already exists for today.";
 } else {
     // Prepare SQL statement to insert data into the database
-    $sql = "INSERT INTO attendance (NW_Attendance_ID, PunchInTime, PunchOutTime, AttendanceDate, ShiftSession_ID, AttendanceStatus_ID, User_ID) VALUES ('$nwAttendanceID', '$time', '$punchOutTime', '$formattedDate', '$shiftSessionID', '$attendanceStatusID', '$userID')";
+    $sql = "INSERT INTO attendance (NW_Attendance_ID, PunchInTime, PunchOutTime, AttendanceDate, ShiftSession_ID, AttendanceStatus_ID, User_ID) VALUES ('$nwAttendanceID', '$punchInTime', '$time', '$formattedDate', '$shiftSessionID', '$attendanceStatusID', '$userID')";
 
     // Execute SQL statement
     if ($conn->query($sql) === TRUE) {
@@ -64,11 +67,11 @@ function generateNWAttendanceID($conn) {
     $row = $result->fetch_assoc();
     $maxID = $row['max_id'];
     if ($maxID === null) {
-        $nwAttendanceID = 'PI0000001'; // Initial value
+        $nwAttendanceID = 'PO0000001'; // Initial value
     } else {
         $maxIDNumeric = intval(substr($maxID, 2)); // Extract numeric part
         $nextIDNumeric = $maxIDNumeric + 1; // Increment
-        $nwAttendanceID = 'PI' . str_pad($nextIDNumeric, 7, '0', STR_PAD_LEFT); // Format
+        $nwAttendanceID = 'PO' . str_pad($nextIDNumeric, 7, '0', STR_PAD_LEFT); // Format
     }
     return $nwAttendanceID;
 }
