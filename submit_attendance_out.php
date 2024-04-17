@@ -67,11 +67,11 @@ function generateNWAttendanceID($conn) {
     $row = $result->fetch_assoc();
     $maxID = $row['max_id'];
     if ($maxID === null) {
-        $nwAttendanceID = 'PO0000001'; // Initial value
+        $nwAttendanceID = 'AT0000001'; // Initial value
     } else {
         $maxIDNumeric = intval(substr($maxID, 2)); // Extract numeric part
         $nextIDNumeric = $maxIDNumeric + 1; // Increment
-        $nwAttendanceID = 'PO' . str_pad($nextIDNumeric, 7, '0', STR_PAD_LEFT); // Format
+        $nwAttendanceID = 'AT' . str_pad($nextIDNumeric, 7, '0', STR_PAD_LEFT); // Format
     }
     return $nwAttendanceID;
 }
