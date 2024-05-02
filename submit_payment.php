@@ -39,8 +39,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     // Set Location_ID based on location value
                     $location_id = ($location == "Cafeteria") ? 1 : 2;
 
-                    // Set Method_ID to 3
-                    $method_id = 3;
+                    // Set Method_ID to 2
+                    $method_id = 2;
 
                     // Decrement the balance by the payment amount
                     $new_balance = $balance - $amount;
@@ -48,8 +48,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     // Update the balance and LastTransactionTimeDate in the wallet table
                     $update_balance_sql = "UPDATE wallet SET Balance = '$new_balance', LastTransactionTimeDate = '$current_datetime' WHERE User_ID = '$user_id'";
                     if ($conn->query($update_balance_sql) === TRUE) {
-                        // Generate NW_Payment_ID
-                        $payment_query = "SELECT COUNT(*) AS count FROM payment";
+                        // Generate NW_Payment_ID for MP
+                        $payment_query = "SELECT COUNT(*) AS count FROM payment WHERE NW_Payment_ID LIKE 'MP%'";
                         $payment_result = $conn->query($payment_query);
                         if ($payment_result->num_rows > 0) {
                             $payment_row = $payment_result->fetch_assoc();
