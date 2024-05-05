@@ -3,6 +3,9 @@
 // Include db_connect.php file
 include 'db_connect.php';
 
+// Initialize an array to store the access codes
+$accessCodes = array();
+
 // Check if username is provided in the POST request
 if(isset($_POST['username'])) {
     // Sanitize and prepare the username for database query
@@ -20,6 +23,33 @@ if(isset($_POST['username'])) {
         $userRow = $userResult->fetch_assoc();
         $userID = $userRow["User_ID"];
         
+        // SQL query to select rows to be deleted and insert into deleted_access_log table
+        $selectDeleteQuery = "SELECT * FROM user_access_area WHERE User_ID = '$userID' AND EndTimeDate < NOW()";
+        $deleteResult = $conn->query($selectDeleteQuery);
+
+        // Check if any rows are returned for deletion
+        if ($deleteResult->num_rows > 0) {
+            // Initialize an array to store the rows for insertion into deleted_access_log
+            $rowsToDelete = array();
+
+            // Fetch rows to be deleted and store them
+            while ($row = $deleteResult->fetch_assoc()) {
+                $rowsToDelete[] = $row;
+            }
+
+            // Insert rows into deleted_access_log table and delete them from user_access_area table
+            foreach ($rowsToDelete as $row) {
+                // Insert into deleted_access_log
+                $insertQuery = "INSERT INTO deleted_access_log (User_ID, AccessArea_ID, StartTimeDate, EndTimeDate, Reason) 
+                                VALUES ('{$row['User_ID']}', '{$row['AccessArea_ID']}', '{$row['StartTimeDate']}', '{$row['EndTimeDate']}', 'Terminated by system')";
+                $conn->query($insertQuery);
+
+                // Delete from user_access_area
+                $deleteQuery = "DELETE FROM user_access_area WHERE User_ID = '{$row['User_ID']}' AND AccessArea_ID = '{$row['AccessArea_ID']}'";
+                $conn->query($deleteQuery);
+            }
+        }
+
         // SQL query to retrieve all AccessCodes based on the UserID
         $accessQuery = "SELECT aa.AccessCode 
                         FROM user_access_area uaa
@@ -29,32 +59,20 @@ if(isset($_POST['username'])) {
         // Execute the query to fetch AccessCodes
         $accessResult = $conn->query($accessQuery);
         
-        // Initialize an array to store the retrieved access codes
-        $accessCodes = array();
-        
         // Check if any rows are returned
         if ($accessResult->num_rows > 0) {
             // Fetch all AccessCodes from the result
             while ($row = $accessResult->fetch_assoc()) {
                 $accessCodes[] = $row["AccessCode"];
             }
-            
-            // Return the AccessCodes as the response
-            echo json_encode($accessCodes);
-        } else {
-            // If no rows are returned, echo an empty array
-            echo json_encode($accessCodes);
         }
-    } else {
-        // If no UserID is found for the provided username, echo an empty array
-        echo json_encode($accessCodes);
     }
-} else {
-    // If username is not provided in the POST request, return an error message
-    echo "Error: Username not provided.";
 }
 
 // Close the database connection
 $conn->close();
+
+// Send access codes as JSON
+echo json_encode($accessCodes);
 
 ?>
