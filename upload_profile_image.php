@@ -14,7 +14,7 @@ function uploadImage($conn) {
         $imageData = base64_decode($imageData);
 
         // Update the ProfileImage attribute for the specified username
-        $stmt = $conn->prepare("UPDATE user SET ProfileImage = ? WHERE UserName = ?");
+        $stmt = $conn->prepare("UPDATE users SET ProfileImage = ? WHERE UserName = ?");
         $stmt->bind_param("ss", $imageData, $username);
 
         // Execute the SQL statement

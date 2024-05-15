@@ -8,9 +8,9 @@ if(isset($_GET['username'])) {
     $username = $conn->real_escape_string($_GET['username']);
 
     // Fetch user data from the database based on the username, including the profile image data
-    $sql = "SELECT u.FullName, u.Niwos_ID, u.Email, u.PhoneNumber, u.StartDate, u.DateOfBirth,
+    $sql = "SELECT u.name, u.Niwos_ID, u.email, u.PhoneNumber, u.StartDate, u.DateOfBirth,
                    p.PositionName, d.DepartmentName, u.ProfileImage
-            FROM user u
+            FROM users u
             LEFT JOIN position p ON u.Position_ID = p.Position_ID
             LEFT JOIN department d ON u.Department_ID = d.Department_ID
             WHERE u.UserName = ?"; // Use placeholder for username

@@ -7,7 +7,7 @@ include 'db_connect.php';
 $username = $_POST["username"];
 
 // Prepare SQL statement to check if username exists
-$sql = "SELECT * FROM user WHERE UserName = '$username'"; // Adjust the column name if necessary
+$sql = "SELECT * FROM users WHERE UserName = '$username'"; // Adjust the column name if necessary
 
 // Execute SQL query
 $result = $conn->query($sql);

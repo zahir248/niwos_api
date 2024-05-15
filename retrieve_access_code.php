@@ -12,7 +12,7 @@ if(isset($_POST['username'])) {
     $username = $conn->real_escape_string($_POST['username']);
     
     // SQL query to retrieve the UserID based on the username
-    $userQuery = "SELECT User_ID FROM user WHERE UserName = '$username'";
+    $userQuery = "SELECT id FROM users WHERE UserName = '$username'";
     
     // Execute the query to fetch UserID
     $userResult = $conn->query($userQuery);
@@ -21,10 +21,10 @@ if(isset($_POST['username'])) {
     if ($userResult->num_rows > 0) {
         // Fetch the UserID from the result
         $userRow = $userResult->fetch_assoc();
-        $userID = $userRow["User_ID"];
+        $userID = $userRow["id"];
         
         // SQL query to select rows to be deleted and insert into deleted_access_log table
-        $selectDeleteQuery = "SELECT * FROM user_access_area WHERE User_ID = '$userID' AND EndTimeDate < NOW()";
+        $selectDeleteQuery = "SELECT * FROM user_access_area WHERE id = '$userID' AND EndTimeDate < NOW()";
         $deleteResult = $conn->query($selectDeleteQuery);
 
         // Check if any rows are returned for deletion
@@ -40,12 +40,12 @@ if(isset($_POST['username'])) {
             // Insert rows into deleted_access_log table and delete them from user_access_area table
             foreach ($rowsToDelete as $row) {
                 // Insert into deleted_access_log
-                $insertQuery = "INSERT INTO deleted_access_log (User_ID, AccessArea_ID, StartTimeDate, EndTimeDate, Reason) 
-                                VALUES ('{$row['User_ID']}', '{$row['AccessArea_ID']}', '{$row['StartTimeDate']}', '{$row['EndTimeDate']}', 'Terminated by system')";
+                $insertQuery = "INSERT INTO deleted_access_log (id, AccessArea_ID, StartTimeDate, EndTimeDate, Reason) 
+                                VALUES ('{$row['id']}', '{$row['AccessArea_ID']}', '{$row['StartTimeDate']}', '{$row['EndTimeDate']}', 'Terminated by system')";
                 $conn->query($insertQuery);
 
                 // Delete from user_access_area
-                $deleteQuery = "DELETE FROM user_access_area WHERE User_ID = '{$row['User_ID']}' AND AccessArea_ID = '{$row['AccessArea_ID']}'";
+                $deleteQuery = "DELETE FROM user_access_area WHERE id = '{$row['id']}' AND AccessArea_ID = '{$row['AccessArea_ID']}'";
                 $conn->query($deleteQuery);
             }
         }
@@ -54,7 +54,7 @@ if(isset($_POST['username'])) {
         $accessQuery = "SELECT aa.AccessCode 
                         FROM user_access_area uaa
                         JOIN access_area aa ON uaa.AccessArea_ID = aa.AccessArea_ID
-                        WHERE uaa.User_ID = '$userID'";
+                        WHERE uaa.id = '$userID'";
         
         // Execute the query to fetch AccessCodes
         $accessResult = $conn->query($accessQuery);

@@ -7,8 +7,8 @@ if (isset($_GET['username'])) {
     $username = $conn->real_escape_string($_GET['username']);
 
     // Prepare SQL statement with a prepared statement to retrieve user data with department name
-    $sql = "SELECT u.FullName, u.Niwos_ID, d.DepartmentName 
-            FROM user u 
+    $sql = "SELECT u.name, u.Niwos_ID, d.DepartmentName 
+            FROM users u 
             LEFT JOIN department d ON u.Department_ID = d.Department_ID
             WHERE u.UserName = ?";
 

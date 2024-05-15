@@ -9,15 +9,24 @@ $password = $_POST['password'];
 
 // Sanitize input
 $username = mysqli_real_escape_string($conn, $username);
-$password = mysqli_real_escape_string($conn, $password);
 
-// Query to check if user exists with provided username and password
-$query = "SELECT * FROM user WHERE UserName = '$username' AND PassWord = '$password'";
+// Query to retrieve the hashed password for the provided username
+$query = "SELECT password FROM users WHERE UserName = '$username'";
 $result = mysqli_query($conn, $query);
 
 if (mysqli_num_rows($result) > 0) {
-    // User found
-    $response = array("found" => true);
+    // User found, retrieve the hashed password
+    $row = mysqli_fetch_assoc($result);
+    $hashed_password_from_db = $row['password'];
+
+    // Verify the password using Laravel's password_verify function
+    if (password_verify($password, $hashed_password_from_db)) {
+        // Password is correct
+        $response = array("found" => true);
+    } else {
+        // Password is incorrect
+        $response = array("found" => false);
+    }
 } else {
     // User not found
     $response = array("found" => false);

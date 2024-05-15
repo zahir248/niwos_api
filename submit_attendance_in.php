@@ -12,9 +12,6 @@ $formattedDate = date('Y-m-d', strtotime($date));
 // Generate NW_Attendance_ID
 $nwAttendanceID = generateNWAttendanceID($conn);
 
-// Set PunchOutTime to null
-$punchOutTime = null;
-
 // Set ShiftSession_ID to 1
 $shiftSessionID = 1;
 
@@ -34,7 +31,7 @@ if (strtotime($time) <= strtotime('09:00:00')) {
 }
 
 // Check if there is already a record for the given date and user ID
-$sqlCheck = "SELECT * FROM attendance WHERE AttendanceDate = '$formattedDate' AND User_ID = '$userID' AND ShiftSession_ID = '$shiftSessionID'";
+$sqlCheck = "SELECT * FROM attendance WHERE AttendanceDate = '$formattedDate' AND id = '$userID' AND ShiftSession_ID = '$shiftSessionID'";
 $resultCheck = $conn->query($sqlCheck);
 
 if ($resultCheck->num_rows > 0) {
@@ -42,7 +39,7 @@ if ($resultCheck->num_rows > 0) {
     echo "Attendance record already exists for today.";
 } else {
     // Prepare SQL statement to insert data into the database
-    $sql = "INSERT INTO attendance (NW_Attendance_ID, PunchInTime, PunchOutTime, AttendanceDate, ShiftSession_ID, AttendanceStatus_ID, User_ID) VALUES ('$nwAttendanceID', '$time', '$punchOutTime', '$formattedDate', '$shiftSessionID', '$attendanceStatusID', '$userID')";
+    $sql = "INSERT INTO attendance (NW_Attendance_ID, PunchInTime, PunchOutTime, AttendanceDate, ShiftSession_ID, AttendanceStatus_ID, id) VALUES ('$nwAttendanceID', '$time', NULL, '$formattedDate', '$shiftSessionID', '$attendanceStatusID', '$userID')";
 
     // Execute SQL statement
     if ($conn->query($sql) === TRUE) {
@@ -75,13 +72,12 @@ function generateNWAttendanceID($conn) {
 
 // Function to get User_ID based on username
 function getUserID($conn, $username) {
-    $sql = "SELECT User_ID FROM user WHERE UserName = '$username'";
+    $sql = "SELECT id FROM users WHERE UserName = '$username'";
     $result = $conn->query($sql);
     if ($result->num_rows > 0) {
         $row = $result->fetch_assoc();
-        return $row['User_ID'];
+        return $row['id'];
     } else {
         return null; // User not found
     }
 }
-?>

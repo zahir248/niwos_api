@@ -6,7 +6,7 @@ include 'db_connect.php';
 $username = $_POST['username'];
 
 // Prepare SQL query to retrieve User_ID from user table based on UserName
-$sql_user = "SELECT User_ID FROM user WHERE UserName = '$username'";
+$sql_user = "SELECT id FROM users WHERE UserName = '$username'";
 
 // Execute SQL query
 $result_user = $conn->query($sql_user);
@@ -15,10 +15,10 @@ $result_user = $conn->query($sql_user);
 if ($result_user->num_rows > 0) {
   // Fetch User_ID from the result
   $row_user = $result_user->fetch_assoc();
-  $user_id = $row_user['User_ID'];
+  $user_id = $row_user['id'];
 
   // Prepare SQL query to retrieve Balance and LastTransactionTimeDate from wallet table based on User_ID
-  $sql_wallet = "SELECT Balance, LastTransactionTimeDate FROM wallet WHERE User_ID = '$user_id'";
+  $sql_wallet = "SELECT Balance, LastTransactionTimeDate FROM wallet WHERE id = '$user_id'";
 
   // Execute SQL query
   $result_wallet = $conn->query($sql_wallet);

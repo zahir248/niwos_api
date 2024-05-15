@@ -18,14 +18,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $amount = $_POST["amount"];
 
         // Get User_ID from the user table based on username
-        $user_query = "SELECT User_ID FROM user WHERE Username = '$username'";
+        $user_query = "SELECT id FROM users WHERE Username = '$username'";
         $user_result = $conn->query($user_query);
         if ($user_result->num_rows > 0) {
             $user_row = $user_result->fetch_assoc();
-            $user_id = $user_row["User_ID"];
+            $user_id = $user_row["id"];
 
             // Check the balance in the wallet table
-            $balance_query = "SELECT Balance FROM wallet WHERE User_ID = '$user_id'";
+            $balance_query = "SELECT Balance FROM wallet WHERE id = '$user_id'";
             $balance_result = $conn->query($balance_query);
             if ($balance_result->num_rows > 0) {
                 $balance_row = $balance_result->fetch_assoc();
@@ -46,7 +46,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     $new_balance = $balance - $amount;
 
                     // Update the balance and LastTransactionTimeDate in the wallet table
-                    $update_balance_sql = "UPDATE wallet SET Balance = '$new_balance', LastTransactionTimeDate = '$current_datetime' WHERE User_ID = '$user_id'";
+                    $update_balance_sql = "UPDATE wallet SET Balance = '$new_balance', LastTransactionTimeDate = '$current_datetime' WHERE id = '$user_id'";
                     if ($conn->query($update_balance_sql) === TRUE) {
                         // Generate NW_Payment_ID for MP
                         $payment_query = "SELECT COUNT(*) AS count FROM payment WHERE NW_Payment_ID LIKE 'MP%'";
@@ -57,7 +57,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                             $nw_payment_id = "MP" . str_pad($count, 7, "0", STR_PAD_LEFT);
                             
                             // Prepare the SQL statement to insert the data into the payment table
-                            $sql = "INSERT INTO payment (NW_Payment_ID, Amount, PaymentTimeDate, Currency, Method_ID, Location_ID, User_ID)
+                            $sql = "INSERT INTO payment (NW_Payment_ID, Amount, PaymentTimeDate, Currency, Method_ID, Location_ID, id)
                             VALUES ('$nw_payment_id', '$amount', '$current_datetime', '$currency', '$method_id', '$location_id', '$user_id')";
 
                             // Execute the SQL statement

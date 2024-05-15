@@ -62,15 +62,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     // Fetch User_ID based on username
-    $stmt = $conn->prepare("SELECT User_ID FROM user WHERE UserName = ?");
+    $stmt = $conn->prepare("SELECT id FROM users WHERE UserName = ?");
     $stmt->bind_param("s", $username);
     $stmt->execute();
     $result = $stmt->get_result();
     $row = $result->fetch_assoc();
-    $userId = $row["User_ID"];
+    $userId = $row["id"];
 
     // Insert leave request into database
-    $sql = "INSERT INTO leave_request (NW_LeaveRequest_ID, StartDate, EndDate, Duration, Reason, SubmissionTimeDate, LeaveRequestStatus_ID, LeaveType_ID, User_ID) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    $sql = "INSERT INTO leave_request (NW_LeaveRequest_ID, StartDate, EndDate, Duration, Reason, SubmissionTimeDate, LeaveRequestStatus_ID, LeaveType_ID, id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("sssisssii", $nwRequestId, $startDate, $endDate, $duration, $reason, $submissionTimeDate, $leaveRequestStatusId, $leaveTypeId, $userId);
 

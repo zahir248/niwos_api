@@ -7,22 +7,22 @@ $username = $_POST['username'];
 $amount = $_POST['amount'];
 
 // Get User_ID from user table based on UserName
-$userQuery = "SELECT User_ID FROM user WHERE UserName = '$username'";
+$userQuery = "SELECT id FROM users WHERE UserName = '$username'";
 $userResult = $conn->query($userQuery);
 
 if ($userResult->num_rows > 0) {
   $row = $userResult->fetch_assoc();
-  $userID = $row['User_ID'];
+  $userID = $row['id'];
 
   // Generate NW_Payment_ID
   $paymentID = generatePaymentID($conn);
 
   // Insert payment details into payment table
-  $insertPaymentQuery = "INSERT INTO payment (NW_Payment_ID, Amount, PaymentTimeDate, Currency, Method_ID, Location_ID, User_ID) VALUES ('$paymentID', $amount, NOW(), 'MYR', 1, NULL, $userID)";
+  $insertPaymentQuery = "INSERT INTO payment (NW_Payment_ID, Amount, PaymentTimeDate, Currency, Method_ID, Location_ID, id) VALUES ('$paymentID', $amount, NOW(), 'MYR', 1, NULL, $userID)";
   
   if ($conn->query($insertPaymentQuery) === TRUE) {
     // Update wallet balance
-    $updateQuery = "UPDATE wallet SET Balance = Balance + $amount, LastTransactionTimeDate = NOW(), User_ID = $userID";
+    $updateQuery = "UPDATE wallet SET Balance = Balance + $amount, LastTransactionTimeDate = NOW() WHERE id = $userID";
   
     if ($conn->query($updateQuery) === TRUE) {
       // Transaction successful

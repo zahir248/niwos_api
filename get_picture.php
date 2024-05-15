@@ -9,7 +9,7 @@ $username = isset($_GET['username']) ? $_GET['username'] : null;
 if ($username) {
     try {
         // Prepare the SQL query
-        $sql = "SELECT SecurityImage FROM user WHERE UserName = ?";
+        $sql = "SELECT SecurityImage FROM users WHERE UserName = ?";
         $stmt = $conn->prepare($sql);
 
         // Bind parameters and execute the query

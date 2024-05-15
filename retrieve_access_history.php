@@ -6,20 +6,20 @@ include 'db_connect.php';
 $username = $_GET['username']; // Assuming it's sent as a GET parameter
 
 // Query to fetch User_ID based on username
-$userQuery = "SELECT User_ID FROM user WHERE UserName = '$username'";
+$userQuery = "SELECT id FROM users WHERE UserName = '$username'";
 $userResult = $conn->query($userQuery);
 
 // Check if username exists and get the User_ID
 if ($userResult->num_rows > 0) {
     $userData = $userResult->fetch_assoc();
-    $userID = $userData['User_ID'];
+    $userID = $userData['id'];
 
     // Query to fetch access request history data based on User_ID and join with related tables
     $query = "SELECT ar.StartTimeDate, ar.EndTimeDate, ar.Duration, ar.Reason, ar.SubmissionTimeDate, ars.Status, aa.AreaName
               FROM access_request AS ar
               JOIN access_request_status AS ars ON ar.AccessRequestStatus_ID = ars.AccessRequestStatus_ID
               JOIN access_request_area AS aa ON ar.AccessRequestArea_ID = aa.AccessRequestArea_ID
-              WHERE ar.User_ID = '$userID'";
+              WHERE ar.id = '$userID'";
     $result = $conn->query($query);
 
     // Check if there are any results

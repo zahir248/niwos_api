@@ -8,20 +8,20 @@ if (isset($_GET['username'])) {
     $username = $_GET['username'];
 
     // Query to get the User_ID based on the provided username
-    $query_user_id = "SELECT User_ID FROM user WHERE UserName = '$username'";
+    $query_user_id = "SELECT id FROM users WHERE UserName = '$username'";
     $result_user_id = $conn->query($query_user_id);
 
     if ($result_user_id->num_rows > 0) {
         // Fetch User_ID from the result
         $row_user_id = $result_user_id->fetch_assoc();
-        $user_id = $row_user_id['User_ID'];
+        $user_id = $row_user_id['id'];
 
         // Query to retrieve access permission data based on the User_ID
         $query_access_permission = "SELECT access_area.AreaName, user_access_area.StartTimeDate, user_access_area.EndTimeDate 
                                     FROM user_access_area 
                                     INNER JOIN access_area 
                                     ON user_access_area.AccessArea_ID = access_area.AccessArea_ID 
-                                    WHERE user_access_area.User_ID = '$user_id'";
+                                    WHERE user_access_area.id = '$user_id'";
         
         $result_access_permission = $conn->query($query_access_permission);
 

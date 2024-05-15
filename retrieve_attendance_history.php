@@ -6,21 +6,21 @@ include 'db_connect.php';
 $username = $_GET['username']; // Assuming it's sent as a GET parameter
 
 // Query to fetch User_ID based on username
-$userQuery = "SELECT User_ID FROM user WHERE UserName = '$username'";
+$userQuery = "SELECT id FROM users WHERE UserName = '$username'";
 $userResult = $conn->query($userQuery);
 
 // Check if username exists and get the User_ID
 if ($userResult->num_rows > 0) {
     $userData = $userResult->fetch_assoc();
-    $userID = $userData['User_ID'];
+    $userID = $userData['id'];
 
     // Query to fetch attendance data based on User_ID and join with related tables
-    $query = "SELECT a.PunchInTime, a.PunchOutTime, a.AttendanceDate, s.Session, st.Status, u.User_ID
+    $query = "SELECT a.PunchInTime, a.PunchOutTime, a.AttendanceDate, s.Session, st.Status, u.id
               FROM attendance AS a
               JOIN shift_session AS s ON a.ShiftSession_ID = s.ShiftSession_ID
               JOIN attendance_status AS st ON a.AttendanceStatus_ID = st.AttendanceStatus_ID
-              JOIN user AS u ON u.User_ID = '$userID'
-              WHERE a.User_ID = '$userID'";
+              JOIN users AS u ON u.id = '$userID'
+              WHERE a.id = '$userID'";
     $result = $conn->query($query);
 
     // Check if there are any results
