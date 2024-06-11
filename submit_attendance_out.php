@@ -1,19 +1,16 @@
 <?php
 include 'db_connect.php';
 
-// Retrieve data sent via POST request
-$username = $_POST['username'];
-$date = $_POST['date'];
-$time = $_POST['time'];
+// Retrieve data sent via POST request and sanitize it
+$username = filter_input(INPUT_POST, 'username', FILTER_SANITIZE_STRING);
+$date = filter_input(INPUT_POST, 'date', FILTER_SANITIZE_STRING);
+$time = filter_input(INPUT_POST, 'time', FILTER_SANITIZE_STRING);
 
 // Convert date to MySQL date format (YYYY-MM-DD)
 $formattedDate = date('Y-m-d', strtotime($date));
 
 // Generate NW_Attendance_ID
 $nwAttendanceID = generateNWAttendanceID($conn);
-
-// Set PunchInTime to null
-$punchInTime = null;
 
 // Set ShiftSession_ID to 2
 $shiftSessionID = 2;
@@ -37,24 +34,32 @@ if (strtotime($time) < strtotime('18:00:00')) {
 }
 
 // Check if there is already a record for the given date, user ID, and ShiftSession_ID
-$sqlCheck = "SELECT * FROM attendance WHERE AttendanceDate = '$formattedDate' AND id = '$userID' AND ShiftSession_ID = '$shiftSessionID'";
+$sqlCheck = "SELECT PunchOutTime FROM attendance WHERE AttendanceDate = '$formattedDate' AND id = '$userID' AND ShiftSession_ID = '$shiftSessionID'";
 $resultCheck = $conn->query($sqlCheck);
 
-if ($resultCheck->num_rows > 0) {
-    // Attendance record already exists for the given date, user ID, and ShiftSession_ID
-    echo "Attendance record already exists for today.";
-} else {
-    // Prepare SQL statement to insert data into the database
-    $sql = "INSERT INTO attendance (NW_Attendance_ID, PunchInTime, PunchOutTime, AttendanceDate, ShiftSession_ID, AttendanceStatus_ID, id) VALUES ('$nwAttendanceID', NULL, '$time', '$formattedDate', '$shiftSessionID', '$attendanceStatusID', '$userID')";
-
-    // Execute SQL statement
-    if ($conn->query($sql) === TRUE) {
-        // Data inserted successfully
-        echo "Data inserted successfully";
+if ($resultCheck) {
+    // Check if any rows are returned
+    if ($resultCheck->num_rows > 0) {
+        // Attendance record already exists for the given date, user ID, and ShiftSession_ID
+        $row = $resultCheck->fetch_assoc();
+        $existingPunchOutTime = $row['PunchOutTime'];
+        echo "Attendance record already exists for today. Punch-out time: $existingPunchOutTime.";
     } else {
-        // Error occurred
-        echo "Error: " . $sql . "<br>" . $conn->error;
+        // Prepare SQL statement to insert data into the database
+        $sql = "INSERT INTO attendance (NW_Attendance_ID, PunchInTime, PunchOutTime, AttendanceDate, ShiftSession_ID, AttendanceStatus_ID, id) VALUES ('$nwAttendanceID', NULL, '$time', '$formattedDate', '$shiftSessionID', '$attendanceStatusID', '$userID')";
+
+        // Execute SQL statement
+        if ($conn->query($sql) === TRUE) {
+            // Data inserted successfully
+            echo "Data inserted successfully";
+        } else {
+            // Error occurred
+            echo "Error: " . $sql . "<br>" . $conn->error;
+        }
     }
+} else {
+    // Error in SQL query
+    echo "Error: " . $sqlCheck . "<br>" . $conn->error;
 }
 
 // Close database connection

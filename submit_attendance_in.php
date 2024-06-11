@@ -1,10 +1,10 @@
 <?php
 include 'db_connect.php';
 
-// Retrieve data sent via POST request
-$username = $_POST['username'];
-$date = $_POST['date'];
-$time = $_POST['time'];
+// Retrieve data sent via POST request and sanitize it
+$username = filter_input(INPUT_POST, 'username', FILTER_SANITIZE_STRING);
+$date = filter_input(INPUT_POST, 'date', FILTER_SANITIZE_STRING);
+$time = filter_input(INPUT_POST, 'time', FILTER_SANITIZE_STRING);
 
 // Convert date to MySQL date format (YYYY-MM-DD)
 $formattedDate = date('Y-m-d', strtotime($date));
@@ -31,23 +31,30 @@ if (strtotime($time) <= strtotime('09:00:00')) {
 }
 
 // Check if there is already a record for the given date and user ID
-$sqlCheck = "SELECT * FROM attendance WHERE AttendanceDate = '$formattedDate' AND id = '$userID' AND ShiftSession_ID = '$shiftSessionID'";
-$resultCheck = $conn->query($sqlCheck);
+$sqlCheck = "SELECT PunchInTime FROM attendance WHERE AttendanceDate = ? AND id = ? AND ShiftSession_ID = ?";
+$stmtCheck = $conn->prepare($sqlCheck);
+$stmtCheck->bind_param("sii", $formattedDate, $userID, $shiftSessionID);
+$stmtCheck->execute();
+$resultCheck = $stmtCheck->get_result();
 
 if ($resultCheck->num_rows > 0) {
     // Attendance record already exists for the given date, user ID, and ShiftSession_ID
-    echo "Attendance record already exists for today.";
+    $row = $resultCheck->fetch_assoc();
+    $existingPunchInTime = $row['PunchInTime'];
+    echo "Attendance record already exists for today. Punch-in time: $existingPunchInTime.";
 } else {
     // Prepare SQL statement to insert data into the database
-    $sql = "INSERT INTO attendance (NW_Attendance_ID, PunchInTime, PunchOutTime, AttendanceDate, ShiftSession_ID, AttendanceStatus_ID, id) VALUES ('$nwAttendanceID', '$time', NULL, '$formattedDate', '$shiftSessionID', '$attendanceStatusID', '$userID')";
+    $sql = "INSERT INTO attendance (NW_Attendance_ID, PunchInTime, PunchOutTime, AttendanceDate, ShiftSession_ID, AttendanceStatus_ID, id) VALUES (?, ?, NULL, ?, ?, ?, ?)";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("sssiii", $nwAttendanceID, $time, $formattedDate, $shiftSessionID, $attendanceStatusID, $userID);
 
     // Execute SQL statement
-    if ($conn->query($sql) === TRUE) {
+    if ($stmt->execute()) {
         // Data inserted successfully
         echo "Data inserted successfully";
     } else {
         // Error occurred
-        echo "Error: " . $sql . "<br>" . $conn->error;
+        echo "Error: " . $stmt->error;
     }
 }
 
@@ -72,8 +79,11 @@ function generateNWAttendanceID($conn) {
 
 // Function to get User_ID based on username
 function getUserID($conn, $username) {
-    $sql = "SELECT id FROM users WHERE UserName = '$username'";
-    $result = $conn->query($sql);
+    $sql = "SELECT id FROM users WHERE UserName = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $result = $stmt->get_result();
     if ($result->num_rows > 0) {
         $row = $result->fetch_assoc();
         return $row['id'];
@@ -81,3 +91,4 @@ function getUserID($conn, $username) {
         return null; // User not found
     }
 }
+?>
